@@ -1,9 +1,9 @@
 <script>
 	import { T } from '@threlte/core';
-	import { ContactShadows, Float, Grid, OrbitControls } from '@threlte/extras';
+	import { ContactShadows, Environment, Float, Grid, OrbitControls, Stars } from '@threlte/extras';
 	import { TextureLoader } from 'three';
 	import { useGltf } from '@threlte/extras';
-	import { Group, Vector3 } from 'three';
+	import { Group, Vector3, Color } from 'three';
 	import { onMount, onDestroy } from 'svelte';
 	import { tweened } from 'svelte/motion';
 	import { cubicOut } from 'svelte/easing';
@@ -75,63 +75,85 @@
 	$: issPosition = latLongToVector3($tweenedLatitude, $tweenedLongitude, 2.5);
 </script>
 
-<!-- Add position display -->
-<div
-	style="position: fixed; top: 10px; left: 10px; background: rgba(0,0,0,0.5); padding: 10px; color: white;"
->
-	<div>Latitude: {$tweenedLatitude.toFixed(4)}°</div>
-	<div>Longitude: {$tweenedLongitude.toFixed(4)}°</div>
-</div>
+<Environment
+	path="/"
+	files="space.hdr"
+	isBackground={true}
+	groundProjection={{ radius: 500, height: 5, scale: { x: 100, y: 100, z: 100 } }}
+/>
+<Stars factor={4} speed={1} radius={80} />
 
-<T.PerspectiveCamera makeDefault position={[-10, 10, 10]} fov={45}>
+<T.AmbientLight intensity={0.2} />
+<T.DirectionalLight intensity={1.5} position={[10, 10, 10]} castShadow />
+
+<T.PerspectiveCamera makeDefault position={[-7, 7, 7]} fov={45}>
 	<OrbitControls
-		autoRotate
+		autoRotate={true}
+		autoRotateSpeed={0.01}
 		enableZoom={true}
-		minDistance={5}
-		maxDistance={50}
-		enableDamping
-		autoRotateSpeed={0.2}
+		minDistance={3}
+		maxDistance={30}
+		enableDamping={true}
+		dampingFactor={0.05}
+		minPolarAngle={Math.PI * 0.2}
+		maxPolarAngle={Math.PI * 0.8}
 		target.y={1.5}
 	/>
 </T.PerspectiveCamera>
 
-<T.AmbientLight intensity={0.8} />
-
-<Grid
-	position.y={-0.001}
-	cellColor="#ffffff"
-	sectionColor="#ffffff"
-	sectionThickness={0}
-	fadeDistance={25}
-	cellSize={2}
-/>
-
-<ContactShadows scale={10} blur={2} far={2.5} opacity={0.5} />
-
 <Float floatIntensity={0.5} floatingRange={[0, 0.5]}>
-	<!-- Earth Sphere -->
-	<T.Mesh>
+	<T.Mesh castShadow receiveShadow>
 		<T.SphereGeometry args={[2, 64, 64]} />
 		<T.MeshPhongMaterial
 			map={earthTexture}
 			{specularMap}
 			{normalMap}
-			normalScale={0.5}
-			specular="#666666"
-			shininess={5}
+			normalScale={0.8}
+			specular="#444444"
+			shininess={25}
+			emissive={new Color(0x112244)}
+			emissiveIntensity={0.1}
 		/>
 	</T.Mesh>
 
-	<!-- Cloud Layer -->
 	<T.Mesh>
 		<T.SphereGeometry args={[2.05, 64, 64]} />
-		<T.MeshPhongMaterial map={cloudsTexture} transparent={true} opacity={0.8} depthWrite={false} />
+		<T.MeshPhongMaterial
+			map={cloudsTexture}
+			transparent={true}
+			opacity={0.4}
+			depthWrite={false}
+			emissive={new Color(0xffffff)}
+			emissiveIntensity={0.05}
+		/>
 	</T.Mesh>
 
-	<!-- ISS with smooth position updates -->
+	<!-- Atmosphere glow -->
+	<T.Mesh>
+		<T.SphereGeometry args={[2.1, 32, 32]} />
+		<T.MeshPhongMaterial color={new Color(0x0077ff)} transparent={true} opacity={0.1} side={2} />
+	</T.Mesh>
+
 	<T.Group position={issPosition} rotation.x={Math.PI / 2}>
 		{#await useGltf('/ISS_stationary.glb') then gltf}
-			<T scale={0.005} is={gltf.scene} />
+			<T scale={0.005} is={gltf.scene}>
+				<T.PointLight intensity={0.5} distance={1} color={new Color(0xff0000)} />
+			</T>
 		{/await}
 	</T.Group>
 </Float>
+
+<!-- Enhanced UI -->
+<div
+	style="position: fixed; top: 20px; left: 20px; 
+		   background: rgba(0,0,0,0.7); 
+		   padding: 15px; 
+		   color: white;
+		   border-radius: 10px;
+		   font-family: 'Arial', sans-serif;
+		   backdrop-filter: blur(5px);"
+>
+	<div style="font-size: 1.2em; margin-bottom: 5px;">ISS Location</div>
+	<div>Latitude: {$tweenedLatitude.toFixed(4)}°</div>
+	<div>Longitude: {$tweenedLongitude.toFixed(4)}°</div>
+</div>
