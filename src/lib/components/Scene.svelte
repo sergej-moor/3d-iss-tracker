@@ -4,6 +4,7 @@
 	import { TextureLoader } from 'three';
 	import { useGltf } from '@threlte/extras';
 	import { Group, Vector3 } from 'three';
+	import { onMount, onDestroy } from 'svelte';
 
 	const textureLoader = new TextureLoader();
 	const earthTexture = textureLoader.load('/2k_earth_daymap.jpg');
@@ -28,14 +29,50 @@
 		return [x, y, z];
 	}
 
-	// Example coordinates (you can make these reactive props)
-	let latitude = 11.5074; // London latitude
-	let longitude = -0.1278; // London longitude
-	let radius = 2.5; // Slightly above Earth's surface (Earth radius is 2)
+	// Store for ISS position
+	let latitude = 0;
+	let longitude = 0;
+	let intervalId;
 
-	// Calculate ISS position
-	$: issPosition = latLongToVector3(latitude, longitude, radius);
+	async function fetchISSPosition() {
+		try {
+			const response = await fetch('/api/iss');
+			const data = await response.json();
+
+			if (data.message === 'success') {
+				latitude = parseFloat(data.iss_position.latitude);
+
+				longitude = parseFloat(data.iss_position.longitude);
+			}
+		} catch (error) {
+			console.error('Error fetching ISS position:', error);
+		}
+	}
+
+	onMount(() => {
+		// Initial fetch
+		fetchISSPosition();
+
+		// Set up interval (every 5 seconds)
+		intervalId = setInterval(fetchISSPosition, 5000);
+	});
+
+	onDestroy(() => {
+		// Clean up interval when component is destroyed
+		if (intervalId) clearInterval(intervalId);
+	});
+
+	// Calculate ISS position (using your existing function)
+	$: issPosition = latLongToVector3(latitude, longitude, 2.5);
 </script>
+
+<!-- Add position display -->
+<div
+	style="position: fixed; top: 10px; left: 10px; background: rgba(0,0,0,0.5); padding: 10px; color: white;"
+>
+	<div>Latitude: {latitude.toFixed(4)}°</div>
+	<div>Longitude: {longitude.toFixed(4)}°</div>
+</div>
 
 <T.PerspectiveCamera makeDefault position={[-10, 10, 10]} fov={45}>
 	<OrbitControls
