@@ -32,7 +32,8 @@
 	// Store for ISS position
 	let latitude = 0;
 	let longitude = 0;
-	let intervalId;
+
+	let intervalId = 10000;
 
 	async function fetchISSPosition() {
 		try {
@@ -53,8 +54,8 @@
 		// Initial fetch
 		fetchISSPosition();
 
-		// Set up interval (every 5 seconds)
-		intervalId = setInterval(fetchISSPosition, 5000);
+		// Set up interval (every 10 seconds)
+		intervalId = setInterval(fetchISSPosition, 10000);
 	});
 
 	onDestroy(() => {
@@ -87,7 +88,7 @@
 </T.PerspectiveCamera>
 
 <T.AmbientLight intensity={0.8} />
-<!-- 
+
 <Grid
 	position.y={-0.001}
 	cellColor="#ffffff"
@@ -95,7 +96,7 @@
 	sectionThickness={0}
 	fadeDistance={25}
 	cellSize={2}
-/> -->
+/>
 
 <ContactShadows scale={10} blur={2} far={2.5} opacity={0.5} />
 
