@@ -1,81 +1,57 @@
 <script>
-  import { T } from '@threlte/core'
-  import { ContactShadows, Float, Grid, OrbitControls } from '@threlte/extras'
+	import { T } from '@threlte/core';
+	import { ContactShadows, Float, Grid, OrbitControls } from '@threlte/extras';
+	import { TextureLoader } from 'three';
+
+	const textureLoader = new TextureLoader();
+	const earthTexture = textureLoader.load('/2k_earth_daymap.jpg');
+	const specularMap = textureLoader.load('/2k_earth_specular_map.tif');
+	const normalMap = textureLoader.load('/2k_earth_normal_map.tif');
+	const cloudsTexture = textureLoader.load('/2k_earth_clouds.jpg');
 </script>
 
-<T.PerspectiveCamera
-  makeDefault
-  position={[-10, 10, 10]}
-  fov={15}
->
-  <OrbitControls
-    autoRotate
-    enableZoom={false}
-    enableDamping
-    autoRotateSpeed={0.5}
-    target.y={1.5}
-  />
+<T.PerspectiveCamera makeDefault position={[-10, 10, 10]} fov={15}>
+	<OrbitControls
+		autoRotate
+		enableZoom={true}
+		minDistance={5}
+		maxDistance={20}
+		enableDamping
+		autoRotateSpeed={0.5}
+		target.y={1.5}
+	/>
 </T.PerspectiveCamera>
 
-<T.DirectionalLight
-  intensity={0.8}
-  position.x={5}
-  position.y={10}
-/>
-<T.AmbientLight intensity={0.2} />
+<T.AmbientLight intensity={0.8} />
 
 <Grid
-  position.y={-0.001}
-  cellColor="#ffffff"
-  sectionColor="#ffffff"
-  sectionThickness={0}
-  fadeDistance={25}
-  cellSize={2}
+	position.y={-0.001}
+	cellColor="#ffffff"
+	sectionColor="#ffffff"
+	sectionThickness={0}
+	fadeDistance={25}
+	cellSize={2}
 />
 
-<ContactShadows
-  scale={10}
-  blur={2}
-  far={2.5}
-  opacity={0.5}
-/>
+<ContactShadows scale={10} blur={2} far={2.5} opacity={0.5} />
 
-<Float
-  floatIntensity={1}
-  floatingRange={[0, 1]}
->
-  <T.Mesh
-    position.y={1.2}
-    position.z={-0.75}
-  >
-    <T.BoxGeometry />
-    <T.MeshStandardMaterial color="#0059BA" />
-  </T.Mesh>
-</Float>
+<Float floatIntensity={0.5} floatingRange={[0, 0.5]}>
+	<!-- Earth Sphere -->
+	<T.Mesh>
+		<T.SphereGeometry args={[2, 64, 64]} />
+		<T.MeshPhongMaterial
+			map={earthTexture}
+			{specularMap}
+			{normalMap}
+			normalScale={0.5}
+			specular="#666666"
+			shininess={5}
+		/>
+	</T.Mesh>
 
-<Float
-  floatIntensity={1}
-  floatingRange={[0, 1]}
->
-  <T.Mesh
-    position={[1.2, 1.5, 0.75]}
-    rotation.x={5}
-    rotation.y={71}
-  >
-    <T.TorusKnotGeometry args={[0.5, 0.15, 100, 12, 2, 3]} />
-    <T.MeshStandardMaterial color="#F85122" />
-  </T.Mesh>
-</Float>
-
-<Float
-  floatIntensity={1}
-  floatingRange={[0, 1]}
->
-  <T.Mesh
-    position={[-1.4, 1.5, 0.75]}
-    rotation={[-5, 128, 10]}
-  >
-    <T.IcosahedronGeometry />
-    <T.MeshStandardMaterial color="#F8EBCE" />
-  </T.Mesh>
+	<!-- Cloud Layer -->
+	<T.Mesh>
+		<T.SphereGeometry args={[2.05, 64, 64]} />
+		<T.MeshPhongMaterial map={cloudsTexture} transparent={true} opacity={0.2} depthWrite={false} />
+	</T.Mesh>
 </Float>
