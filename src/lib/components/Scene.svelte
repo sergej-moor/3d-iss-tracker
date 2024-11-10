@@ -114,12 +114,26 @@
 		});
 	}
 
+	const lightIntensity = tweened(0.8, {
+		duration: 2000,
+		easing: cubicOut
+	});
+
+	function blinkLight() {
+		lightIntensity
+			.set(0.2)
+			.then(() => lightIntensity.set(0.8))
+			.then(() => blinkLight());
+	}
+
 	onMount(() => {
 		rotateLoading();
+		blinkLight();
 	});
 
 	onDestroy(() => {
 		loadingRotation.set($loadingRotation);
+		lightIntensity.set(0.8);
 	});
 </script>
 
@@ -202,7 +216,19 @@
 					Math.PI / 2 + $issRotation.z
 				]}
 			>
-				<T.PointLight intensity={0.5} distance={1} color={new Color(0xff0000)} />
+				<T.PointLight
+					intensity={$lightIntensity}
+					distance={0.5}
+					decay={2}
+					color={new Color(0xffcccc)}
+				/>
+				<T.PointLight
+					intensity={$lightIntensity}
+					distance={0.5}
+					decay={2}
+					position={[0, 0, 15]}
+					color={new Color(0xffcccc)}
+				/>
 			</T>
 		{/await}
 	</T.Group>
