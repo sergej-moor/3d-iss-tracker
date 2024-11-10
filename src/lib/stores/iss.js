@@ -21,12 +21,13 @@ const createISSStore = () => {
 			const data = await response.json();
 
 			if (data.message === 'success') {
-				const newLat = parseFloat(data.iss_position.latitude);
-				const newLong = parseFloat(data.iss_position.longitude);
-
-				tweenedLatitude.set(newLat);
-				tweenedLongitude.set(newLong);
-				set({ loading: false, error: null });
+				tweenedLatitude.set(data.iss_position.latitude);
+				tweenedLongitude.set(data.iss_position.longitude);
+				set({
+					loading: false,
+					error: null,
+					lastUpdate: data.timestamp
+				});
 			}
 		} catch (error) {
 			set({ loading: false, error: error.message });
