@@ -2,12 +2,12 @@ import { writable } from 'svelte/store';
 import { tweened } from 'svelte/motion';
 import { cubicOut } from 'svelte/easing';
 
-export const tweenedLatitude = tweened(0, {
+export const tweenedLatitude = tweened(null, {
 	duration: 5000,
 	easing: cubicOut
 });
 
-export const tweenedLongitude = tweened(0, {
+export const tweenedLongitude = tweened(null, {
 	duration: 5000,
 	easing: cubicOut
 });
@@ -18,6 +18,7 @@ export const visibility = writable('');
 
 const createISSStore = () => {
 	const { subscribe, set } = writable({ loading: true, error: null });
+	let isFirstFetch = true;
 
 	const fetchISSPosition = async () => {
 		try {
@@ -25,8 +26,15 @@ const createISSStore = () => {
 			const data = await response.json();
 
 			if (data.message === 'success') {
-				tweenedLatitude.set(data.iss_position.latitude);
-				tweenedLongitude.set(data.iss_position.longitude);
+				if (isFirstFetch) {
+					tweenedLatitude.set(data.iss_position.latitude, { duration: 0 });
+					tweenedLongitude.set(data.iss_position.longitude, { duration: 0 });
+					isFirstFetch = false;
+				} else {
+					tweenedLatitude.set(data.iss_position.latitude);
+					tweenedLongitude.set(data.iss_position.longitude);
+				}
+
 				altitude.set(data.iss_position.altitude);
 				velocity.set(data.iss_position.velocity);
 				visibility.set(data.iss_position.visibility);

@@ -45,12 +45,12 @@
 	$: issPosition =
 		$tweenedLatitude !== null && $tweenedLongitude !== null
 			? latLongToVector3($tweenedLatitude, $tweenedLongitude, 2.5)
-			: [0, 0, 0];
+			: null;
 
 	$: cameraIssPosition =
 		$tweenedLatitude !== null && $tweenedLongitude !== null
 			? latLongToVector3($tweenedLatitude, $tweenedLongitude, 3)
-			: [0, 0, 0];
+			: null;
 
 	let cloudRotation = 0;
 
@@ -106,7 +106,7 @@
 		bind:ref={controls}
 		noZoom={false}
 		noPan={true}
-		dynamicDampingFactor={0.15}
+		dynamicDampingFactor={0.05}
 		minDistance={3}
 		maxDistance={30}
 		enabled={true}

@@ -1,7 +1,7 @@
 // Server-side tracker
 let currentPosition = {
-	latitude: 0,
-	longitude: 0,
+	latitude: null,
+	longitude: null,
 	altitude: 0,
 	velocity: 0,
 	visibility: '',
