@@ -2,6 +2,9 @@
 let currentPosition = {
 	latitude: 0,
 	longitude: 0,
+	altitude: 0,
+	velocity: 0,
+	visibility: '',
 	lastUpdate: null,
 	loading: true,
 	error: null
@@ -11,14 +14,17 @@ let intervalId = null;
 
 async function updateISSPosition() {
 	try {
-		const response = await fetch('http://api.open-notify.org/iss-now.json');
+		const response = await fetch('https://api.wheretheiss.at/v1/satellites/25544');
 		const data = await response.json();
 
-		if (data.message === 'success') {
+		if (data.name === 'iss') {
 			currentPosition = {
-				latitude: parseFloat(data.iss_position.latitude),
-				longitude: parseFloat(data.iss_position.longitude),
-				lastUpdate: new Date().toISOString(),
+				latitude: parseFloat(data.latitude),
+				longitude: parseFloat(data.longitude),
+				altitude: parseFloat(data.altitude),
+				velocity: parseFloat(data.velocity),
+				visibility: data.visibility,
+				lastUpdate: new Date(data.timestamp * 1000).toISOString(),
 				loading: false,
 				error: null
 			};

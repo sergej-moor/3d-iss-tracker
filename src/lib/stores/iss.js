@@ -12,6 +12,10 @@ export const tweenedLongitude = tweened(0, {
 	easing: cubicOut
 });
 
+export const altitude = writable(0);
+export const velocity = writable(0);
+export const visibility = writable('');
+
 const createISSStore = () => {
 	const { subscribe, set } = writable({ loading: true, error: null });
 
@@ -23,6 +27,10 @@ const createISSStore = () => {
 			if (data.message === 'success') {
 				tweenedLatitude.set(data.iss_position.latitude);
 				tweenedLongitude.set(data.iss_position.longitude);
+				altitude.set(data.iss_position.altitude);
+				velocity.set(data.iss_position.velocity);
+				visibility.set(data.iss_position.visibility);
+
 				set({
 					loading: false,
 					error: null,

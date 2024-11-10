@@ -8,7 +8,10 @@ export async function GET() {
 		message: 'success',
 		iss_position: {
 			latitude: position.latitude,
-			longitude: position.longitude
+			longitude: position.longitude,
+			altitude: position.altitude,
+			velocity: position.velocity,
+			visibility: position.visibility
 		},
 		timestamp: position.lastUpdate,
 		loading: position.loading,
