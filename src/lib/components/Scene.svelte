@@ -93,12 +93,7 @@
 	}
 </script>
 
-<Environment
-	path="/"
-	files="8k_stars_milky_way.jpg"
-	isBackground={true}
-	groundProjection={{ radius: 500, height: 5, scale: { x: 100, y: 100, z: 100 } }}
-/>
+<Environment path="/" files="8k_stars_milky_way.jpg" isBackground={true} />
 
 <Stars factor={6} speed={1} radius={50} />
 
