@@ -1,6 +1,13 @@
 <script>
 	import { T } from '@threlte/core';
-	import { ContactShadows, Environment, Float, Grid, OrbitControls, Stars } from '@threlte/extras';
+	import {
+		ContactShadows,
+		Environment,
+		Float,
+		Grid,
+		TrackballControls,
+		Stars
+	} from '@threlte/extras';
 	import { TextureLoader } from 'three';
 	import { useGltf } from '@threlte/extras';
 	import { Group, Vector3, Color } from 'three';
@@ -59,17 +66,13 @@
 <T.DirectionalLight intensity={1.5} position={[10, 10, 10]} castShadow />
 
 <T.PerspectiveCamera makeDefault position={[-7, 7, 7]} fov={45}>
-	<OrbitControls
-		autoRotate={true}
-		autoRotateSpeed={0.01}
-		enableZoom={true}
-		minDistance={3}
+	<TrackballControls
+		noZoom={false}
+		noPan={false}
+		dynamicDampingFactor={0.15}
+		minDistance={3.5}
 		maxDistance={30}
-		enableDamping={true}
-		dampingFactor={0.05}
-		minPolarAngle={Math.PI * 0.2}
-		maxPolarAngle={Math.PI * 0.8}
-		target.y={1.5}
+		enabled={true}
 	/>
 </T.PerspectiveCamera>
 
