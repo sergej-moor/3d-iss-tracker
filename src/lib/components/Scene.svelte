@@ -33,8 +33,11 @@
 		return [x, y, z];
 	}
 
-	// Calculate ISS position using tweened values
-	$: issPosition = latLongToVector3($tweenedLatitude, $tweenedLongitude, 2.5);
+	// Calculate ISS position using tweened values, with fallback
+	$: issPosition =
+		$tweenedLatitude !== null && $tweenedLongitude !== null
+			? latLongToVector3($tweenedLatitude, $tweenedLongitude, 2.5)
+			: [0, 0, 0]; // Or you could return null and not render the ISS until position is known
 
 	let cloudRotation = 0;
 
@@ -101,10 +104,13 @@
 	<T.MeshPhongMaterial color={new Color(0x0077ff)} transparent={true} opacity={0.1} side={2} />
 </T.Mesh>
 
-<T.Group position={issPosition} rotation.x={Math.PI / 2}>
-	{#await useGltf('/ISS_stationary.glb') then gltf}
-		<T scale={0.002} is={gltf.scene}>
-			<T.PointLight intensity={0.5} distance={1} color={new Color(0xff0000)} />
-		</T>
-	{/await}
-</T.Group>
+<!-- Only show ISS when we have position data -->
+{#if $tweenedLatitude !== null && $tweenedLongitude !== null}
+	<T.Group position={issPosition} rotation.x={Math.PI / 2}>
+		{#await useGltf('/ISS_stationary.glb') then gltf}
+			<T scale={0.002} is={gltf.scene}>
+				<T.PointLight intensity={0.5} distance={1} color={new Color(0xff0000)} />
+			</T>
+		{/await}
+	</T.Group>
+{/if}
