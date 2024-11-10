@@ -13,7 +13,7 @@
 	import { Group, Vector3, Color } from 'three';
 	import { onMount, onDestroy } from 'svelte';
 	import { tweened } from 'svelte/motion';
-	import { cubicOut } from 'svelte/easing';
+	import { cubicOut, elasticIn, elasticInOut, elasticOut } from 'svelte/easing';
 	import { useFrame } from '@threlte/core';
 	import { tweenedLatitude, tweenedLongitude } from '$lib/stores/iss';
 	import { centerOnISS } from '$lib/stores/controls';
@@ -80,13 +80,34 @@
 				{ duration: 0 }
 			);
 
-			cameraPosition.set({ x, y, z }, { duration: 3000 });
+			cameraPosition.set({ x, y, z }, { duration: 3000 }).then(() => {
+				rotateISS();
+			});
 		});
 	}
 
 	$: if (controls) {
 		controls.object.position.set($cameraPosition.x, $cameraPosition.y, $cameraPosition.z);
 		controls.update();
+	}
+
+	const issRotation = tweened(
+		{ x: 0, y: 0, z: 0 },
+		{
+			duration: 6000,
+			easing: elasticInOut
+		}
+	);
+
+	let totalRotation = 0; // Keep track of total rotation
+
+	function rotateISS() {
+		totalRotation += Math.PI * 2; // Increment by 360 degrees
+		issRotation.set({
+			x: 0,
+			y: totalRotation,
+			z: 0
+		});
 	}
 </script>
 
@@ -147,9 +168,17 @@
 
 <!-- Only show ISS when we have position data -->
 {#if $tweenedLatitude !== null && $tweenedLongitude !== null}
-	<T.Group position={issPosition} rotation.x={Math.PI / 2}>
+	<T.Group position={issPosition}>
 		{#await useGltf('/ISS_stationary.glb') then gltf}
-			<T scale={0.002} is={gltf.scene}>
+			<T
+				scale={0.002}
+				is={gltf.scene}
+				rotation={[
+					-(($tweenedLatitude * Math.PI) / 180) + $issRotation.x,
+					($tweenedLongitude * Math.PI) / 180 + Math.PI / 2 + $issRotation.y,
+					Math.PI / 2 + $issRotation.z
+				]}
+			>
 				<T.PointLight intensity={0.5} distance={1} color={new Color(0xff0000)} />
 			</T>
 		{/await}
