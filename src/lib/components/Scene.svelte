@@ -46,12 +46,13 @@
 	});
 </script>
 
-<Environment
+<!-- <Environment
 	path="/"
 	files="space.hdr"
 	isBackground={true}
 	groundProjection={{ radius: 500, height: 5, scale: { x: 100, y: 100, z: 100 } }}
-/>
+/> -->
+
 <Stars factor={4} speed={1} radius={80} />
 
 <T.AmbientLight intensity={0.2} />
