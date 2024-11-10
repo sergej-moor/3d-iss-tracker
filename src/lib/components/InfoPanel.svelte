@@ -1,5 +1,10 @@
 <script>
-	import { tweenedLatitude, tweenedLongitude } from '$lib/stores/iss';
+	import { tweenedLatitude, tweenedLongitude, issStore } from '$lib/stores/iss';
+
+	// Format the timestamp
+	$: formattedTime = $issStore.lastUpdate
+		? new Date($issStore.lastUpdate).toLocaleTimeString()
+		: 'Loading...';
 </script>
 
 <div
@@ -14,4 +19,7 @@
 	<div style="font-size: 1.2em; margin-bottom: 5px;">ISS Location</div>
 	<div>Latitude: {$tweenedLatitude.toFixed(4)}°</div>
 	<div>Longitude: {$tweenedLongitude.toFixed(4)}°</div>
+	<div style="margin-top: 10px; font-size: 0.8em; color: #aaa;">
+		Last update: {formattedTime}
+	</div>
 </div>
