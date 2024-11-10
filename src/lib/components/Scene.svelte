@@ -24,12 +24,6 @@
 	const normalMap = textureLoader.load('/2k_earth_normal_map.tif');
 	const cloudsTexture = textureLoader.load('/2k_earth_clouds.jpg');
 
-	// Function to convert lat/long to 3D position
-	/**
-	 * @param {number} latitude
-	 * @param {number} longitude
-	 * @param {number} radius
-	 */
 	function latLongToVector3(latitude, longitude, radius) {
 		const phi = (90 - latitude) * (Math.PI / 180);
 		const theta = (longitude + 180) * (Math.PI / 180);
@@ -41,7 +35,6 @@
 		return [x, y, z];
 	}
 
-	// Calculate ISS position using tweened values, with fallback
 	$: issPosition =
 		$tweenedLatitude !== null && $tweenedLongitude !== null
 			? latLongToVector3($tweenedLatitude, $tweenedLongitude, 2.5)
@@ -99,16 +92,35 @@
 		}
 	);
 
-	let totalRotation = 0; // Keep track of total rotation
+	let totalRotation = 0;
 
 	function rotateISS() {
-		totalRotation += Math.PI * 2; // Increment by 360 degrees
+		totalRotation += Math.PI * 2;
 		issRotation.set({
 			x: 0,
 			y: totalRotation,
 			z: 0
 		});
 	}
+
+	const loadingRotation = tweened(0, {
+		duration: 2000,
+		easing: elasticOut
+	});
+
+	function rotateLoading() {
+		loadingRotation.set($loadingRotation + Math.PI * 2).then(() => {
+			rotateLoading();
+		});
+	}
+
+	onMount(() => {
+		rotateLoading();
+	});
+
+	onDestroy(() => {
+		loadingRotation.set($loadingRotation);
+	});
 </script>
 
 <Environment path="/" files="8k_stars_milky_way.jpg" isBackground={true} />
@@ -160,16 +172,27 @@
 	/>
 </T.Mesh>
 
-<!-- Atmosphere glow -->
 <T.Mesh>
 	<T.SphereGeometry args={[2.1, 32, 32]} />
 	<T.MeshPhongMaterial color={new Color(0x0077ff)} transparent={true} opacity={0.1} side={2} />
 </T.Mesh>
 
-<!-- Only show ISS when we have position data -->
 {#if $tweenedLatitude !== null && $tweenedLongitude !== null}
 	<T.Group position={issPosition}>
-		{#await useGltf('/ISS_stationary.glb') then gltf}
+		{#await useGltf('/ISS_stationary.glb')}
+			<T.Group
+				rotation={[
+					-(($tweenedLatitude * Math.PI) / 180) + $issRotation.x,
+					($tweenedLongitude * Math.PI) / 180 + Math.PI / 2 + $issRotation.y,
+					Math.PI / 2 + $issRotation.z
+				]}
+			>
+				<T.Mesh scale={0.1} rotation.z={$loadingRotation}>
+					<T.TorusGeometry args={[1, 0.1, 16, 32, Math.PI * 1.5]} />
+					<T.MeshBasicMaterial color={new Color(0xffffff)} opacity={0.5} transparent />
+				</T.Mesh>
+			</T.Group>
+		{:then gltf}
 			<T
 				scale={0.002}
 				is={gltf.scene}
