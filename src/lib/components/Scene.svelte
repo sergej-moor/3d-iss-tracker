@@ -49,7 +49,7 @@
 
 	$: cameraIssPosition =
 		$tweenedLatitude !== null && $tweenedLongitude !== null
-			? latLongToVector3($tweenedLatitude, $tweenedLongitude, 3.5)
+			? latLongToVector3($tweenedLatitude, $tweenedLongitude, 3)
 			: [0, 0, 0];
 
 	let cloudRotation = 0;
@@ -93,14 +93,14 @@
 	}
 </script>
 
-<!-- <Environment
+<Environment
 	path="/"
-	files="space.hdr"
+	files="8k_stars_milky_way.jpg"
 	isBackground={true}
 	groundProjection={{ radius: 500, height: 5, scale: { x: 100, y: 100, z: 100 } }}
-/> -->
+/>
 
-<Stars factor={4} speed={1} radius={80} />
+<Stars factor={6} speed={1} radius={50} />
 
 <T.AmbientLight intensity={0.2} />
 <T.DirectionalLight intensity={1.5} position={[10, 10, 10]} castShadow />
@@ -115,7 +115,7 @@
 		noZoom={false}
 		noPan={false}
 		dynamicDampingFactor={0.15}
-		minDistance={3.5}
+		minDistance={3}
 		maxDistance={30}
 		enabled={true}
 	/>
