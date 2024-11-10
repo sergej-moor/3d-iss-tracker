@@ -58,9 +58,6 @@
 		cloudRotation += 0.0002;
 	});
 
-	/**
-	 * @type {{ object: { position: { x: any; y: any; z: any; set: (arg0: number, arg1: number, arg2: number) => void; }; }; update: () => void; }}
-	 */
 	let controls;
 
 	const cameraPosition = tweened(
@@ -108,7 +105,7 @@
 	<TrackballControls
 		bind:ref={controls}
 		noZoom={false}
-		noPan={false}
+		noPan={true}
 		dynamicDampingFactor={0.15}
 		minDistance={3}
 		maxDistance={30}
