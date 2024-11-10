@@ -2,6 +2,7 @@
 	import { Canvas } from '@threlte/core';
 	import Scene from './Scene.svelte';
 	import InfoPanel from './InfoPanel.svelte';
+	import CenterButton from './CenterButton.svelte';
 	import { issStore } from '$lib/stores/iss';
 	import { onMount, onDestroy } from 'svelte';
 
@@ -18,3 +19,4 @@
 	<Scene />
 </Canvas>
 <InfoPanel />
+<CenterButton />

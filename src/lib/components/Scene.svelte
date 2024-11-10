@@ -16,6 +16,7 @@
 	import { cubicOut } from 'svelte/easing';
 	import { useFrame } from '@threlte/core';
 	import { tweenedLatitude, tweenedLongitude } from '$lib/stores/iss';
+	import { centerOnISS } from '$lib/stores/controls';
 
 	const textureLoader = new TextureLoader();
 	const earthTexture = textureLoader.load('/2k_earth_daymap.jpg');
@@ -44,13 +45,52 @@
 	$: issPosition =
 		$tweenedLatitude !== null && $tweenedLongitude !== null
 			? latLongToVector3($tweenedLatitude, $tweenedLongitude, 2.5)
-			: [0, 0, 0]; // Or you could return null and not render the ISS until position is known
+			: [0, 0, 0];
+
+	$: cameraIssPosition =
+		$tweenedLatitude !== null && $tweenedLongitude !== null
+			? latLongToVector3($tweenedLatitude, $tweenedLongitude, 3.5)
+			: [0, 0, 0];
 
 	let cloudRotation = 0;
 
 	useFrame(() => {
 		cloudRotation += 0.0002;
 	});
+
+	/**
+	 * @type {{ object: { position: { x: any; y: any; z: any; set: (arg0: number, arg1: number, arg2: number) => void; }; }; update: () => void; }}
+	 */
+	let controls;
+
+	const cameraPosition = tweened(
+		{ x: -7, y: 7, z: 7 },
+		{
+			duration: 5000,
+			easing: cubicOut
+		}
+	);
+
+	$: if (controls) {
+		centerOnISS.set(() => {
+			const [x, y, z] = cameraIssPosition;
+			cameraPosition.set(
+				{
+					x: controls.object.position.x,
+					y: controls.object.position.y,
+					z: controls.object.position.z
+				},
+				{ duration: 0 }
+			);
+
+			cameraPosition.set({ x, y, z }, { duration: 3000 });
+		});
+	}
+
+	$: if (controls) {
+		controls.object.position.set($cameraPosition.x, $cameraPosition.y, $cameraPosition.z);
+		controls.update();
+	}
 </script>
 
 <!-- <Environment
@@ -65,8 +105,13 @@
 <T.AmbientLight intensity={0.2} />
 <T.DirectionalLight intensity={1.5} position={[10, 10, 10]} castShadow />
 
-<T.PerspectiveCamera makeDefault position={[-7, 7, 7]} fov={45}>
+<T.PerspectiveCamera
+	makeDefault
+	position={[$cameraPosition.x, $cameraPosition.y, $cameraPosition.z]}
+	fov={45}
+>
 	<TrackballControls
+		bind:ref={controls}
 		noZoom={false}
 		noPan={false}
 		dynamicDampingFactor={0.15}
