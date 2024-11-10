@@ -193,7 +193,7 @@
 
 {#if $tweenedLatitude !== null && $tweenedLongitude !== null}
 	<T.Group position={issPosition}>
-		{#await useGltf('/ISS_stationary.glb')}
+		{#await useGltf('/compressed_medium_ISS_stationary.glb')}
 			<T.Group
 				rotation={[
 					-(($tweenedLatitude * Math.PI) / 180) + $issRotation.x,
