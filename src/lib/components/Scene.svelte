@@ -7,6 +7,8 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { tweened } from 'svelte/motion';
 	import { cubicOut } from 'svelte/easing';
+	import { useFrame } from '@threlte/core';
+	import { tweenedLatitude, tweenedLongitude } from '$lib/stores/iss';
 
 	const textureLoader = new TextureLoader();
 	const earthTexture = textureLoader.load('/2k_earth_daymap.jpg');
@@ -31,48 +33,14 @@
 		return [x, y, z];
 	}
 
-	// Create tweened stores for smooth transitions
-	const tweenedLatitude = tweened(0, {
-		duration: 5000, // Duration matches the update interval
-		easing: cubicOut
-	});
-
-	const tweenedLongitude = tweened(0, {
-		duration: 5000,
-		easing: cubicOut
-	});
-
-	let intervalId = 10000;
-
-	async function fetchISSPosition() {
-		try {
-			const response = await fetch('/api/iss');
-			const data = await response.json();
-
-			if (data.message === 'success') {
-				const newLat = parseFloat(data.iss_position.latitude);
-				const newLong = parseFloat(data.iss_position.longitude);
-
-				// Update tweened stores
-				tweenedLatitude.set(newLat);
-				tweenedLongitude.set(newLong);
-			}
-		} catch (error) {
-			console.error('Error fetching ISS position:', error);
-		}
-	}
-
-	onMount(() => {
-		fetchISSPosition();
-		intervalId = setInterval(fetchISSPosition, 10000);
-	});
-
-	onDestroy(() => {
-		if (intervalId) clearInterval(intervalId);
-	});
-
 	// Calculate ISS position using tweened values
 	$: issPosition = latLongToVector3($tweenedLatitude, $tweenedLongitude, 2.5);
+
+	let cloudRotation = 0;
+
+	useFrame(() => {
+		cloudRotation += 0.00002;
+	});
 </script>
 
 <Environment
@@ -101,59 +69,42 @@
 	/>
 </T.PerspectiveCamera>
 
-<Float floatIntensity={0.5} floatingRange={[0, 0.5]}>
-	<T.Mesh castShadow receiveShadow>
-		<T.SphereGeometry args={[2, 64, 64]} />
-		<T.MeshPhongMaterial
-			map={earthTexture}
-			{specularMap}
-			{normalMap}
-			normalScale={0.8}
-			specular="#444444"
-			shininess={25}
-			emissive={new Color(0x112244)}
-			emissiveIntensity={0.1}
-		/>
-	</T.Mesh>
+<T.Mesh castShadow receiveShadow>
+	<T.SphereGeometry args={[2, 64, 64]} />
+	<T.MeshPhongMaterial
+		map={earthTexture}
+		{specularMap}
+		{normalMap}
+		normalScale={0.8}
+		specular="#444444"
+		shininess={25}
+		emissive={new Color(0x112244)}
+		emissiveIntensity={0.1}
+	/>
+</T.Mesh>
 
-	<T.Mesh>
-		<T.SphereGeometry args={[2.05, 64, 64]} />
-		<T.MeshPhongMaterial
-			map={cloudsTexture}
-			transparent={true}
-			opacity={0.4}
-			depthWrite={false}
-			emissive={new Color(0xffffff)}
-			emissiveIntensity={0.05}
-		/>
-	</T.Mesh>
+<T.Mesh rotation.y={cloudRotation}>
+	<T.SphereGeometry args={[2.05, 64, 64]} />
+	<T.MeshPhongMaterial
+		map={cloudsTexture}
+		transparent={true}
+		opacity={0.4}
+		depthWrite={false}
+		emissive={new Color(0xffffff)}
+		emissiveIntensity={0.05}
+	/>
+</T.Mesh>
 
-	<!-- Atmosphere glow -->
-	<T.Mesh>
-		<T.SphereGeometry args={[2.1, 32, 32]} />
-		<T.MeshPhongMaterial color={new Color(0x0077ff)} transparent={true} opacity={0.1} side={2} />
-	</T.Mesh>
+<!-- Atmosphere glow -->
+<T.Mesh>
+	<T.SphereGeometry args={[2.1, 32, 32]} />
+	<T.MeshPhongMaterial color={new Color(0x0077ff)} transparent={true} opacity={0.1} side={2} />
+</T.Mesh>
 
-	<T.Group position={issPosition} rotation.x={Math.PI / 2}>
-		{#await useGltf('/ISS_stationary.glb') then gltf}
-			<T scale={0.005} is={gltf.scene}>
-				<T.PointLight intensity={0.5} distance={1} color={new Color(0xff0000)} />
-			</T>
-		{/await}
-	</T.Group>
-</Float>
-
-<!-- Enhanced UI -->
-<div
-	style="position: fixed; top: 20px; left: 20px; 
-		   background: rgba(0,0,0,0.7); 
-		   padding: 15px; 
-		   color: white;
-		   border-radius: 10px;
-		   font-family: 'Arial', sans-serif;
-		   backdrop-filter: blur(5px);"
->
-	<div style="font-size: 1.2em; margin-bottom: 5px;">ISS Location</div>
-	<div>Latitude: {$tweenedLatitude.toFixed(4)}°</div>
-	<div>Longitude: {$tweenedLongitude.toFixed(4)}°</div>
-</div>
+<T.Group position={issPosition} rotation.x={Math.PI / 2}>
+	{#await useGltf('/ISS_stationary.glb') then gltf}
+		<T scale={0.002} is={gltf.scene}>
+			<T.PointLight intensity={0.5} distance={1} color={new Color(0xff0000)} />
+		</T>
+	{/await}
+</T.Group>
