@@ -49,7 +49,7 @@
 	let cloudRotation = 0;
 
 	useFrame(() => {
-		cloudRotation += 0.00002;
+		cloudRotation += 0.0002;
 	});
 </script>
 
@@ -95,10 +95,10 @@
 	<T.MeshPhongMaterial
 		map={cloudsTexture}
 		transparent={true}
-		opacity={0.4}
+		opacity={0.2}
 		depthWrite={false}
 		emissive={new Color(0xffffff)}
-		emissiveIntensity={0.05}
+		emissiveIntensity={0.01}
 	/>
 </T.Mesh>
 
